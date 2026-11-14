@@ -44,7 +44,7 @@ export async function getSession(req, role) {
 }
 export const requireRole = role => async (req, res, next) => {
   const session = await getSession(req, role);
-  if (!session) throw new HttpError(401, role === 'admin' ? '请先登录管理员账号' : '请先登录后再操作');
+  if (!session) throw new HttpError(401, role === 'admin' ? '请先验证管理员密钥' : '请先登录后再操作');
   req.auth = session;
   next();
 };

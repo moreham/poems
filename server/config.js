@@ -14,7 +14,7 @@ const env = z.object({
   REDIS_URL: z.string().min(1),
   AUTH_SECRET: z.string().min(32),
   ADMIN_USERNAME: z.string().min(3).max(80).default('admin'),
-  ADMIN_PASSWORD: z.string().min(12).max(128).optional(),
+  ADMIN_KEY: z.string().min(5).max(128).default('zmhnb'),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().default(587),
   SMTP_SECURE: bool.default(false),

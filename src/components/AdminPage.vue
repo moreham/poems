@@ -1,17 +1,17 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { api, statusLabels, statusTypes, displayDate } from '../api.js';
 import SubmissionDetails from './SubmissionDetails.vue';
 const admin = ref(null), checking = ref(true), loginBusy = ref(false), loginError = ref('');
-const credentials = reactive({ username: '', password: '' });
+const adminKey = ref('');
 const items = ref([]), total = ref(0), page = ref(1), status = ref('pending'), counts = ref({}), busy = ref(false), error = ref('');
 const selected = ref(null), rejectOpen = ref(false), reason = ref(''), reviewBusy = ref(false);
 let revision = 0;
 async function login() {
   if (loginBusy.value) return;
   loginBusy.value = true; loginError.value = '';
-  try { admin.value = (await api('/admin/login', { method: 'POST', body: credentials })).admin; credentials.password = ''; load(); }
+  try { admin.value = (await api('/admin/login', { method: 'POST', body: { key: adminKey.value } })).admin; adminKey.value = ''; load(); }
   catch (failure) { loginError.value = failure.message; }
   finally { loginBusy.value = false; }
 }
@@ -58,8 +58,8 @@ onMounted(async () => {
   <main class="content-page admin-page">
     <div v-if="checking" class="empty-panel">正在确认管理员身份…</div>
     <section v-else-if="!admin" class="admin-login data-panel">
-      <p class="eyebrow">独立管理入口</p><h1>管理员登录</h1><p class="muted">使用管理员账号密码进入审核后台。</p>
-      <el-form label-position="top" @submit.prevent="login"><el-form-item label="管理员账号"><el-input v-model="credentials.username" maxlength="80" autocomplete="username" /></el-form-item><el-form-item label="管理员密码"><el-input v-model="credentials.password" type="password" maxlength="128" autocomplete="current-password" show-password /></el-form-item><el-alert v-if="loginError" :title="loginError" type="error" :closable="false" /><el-button class="full-width form-submit" type="primary" native-type="submit" :loading="loginBusy">登录后台</el-button></el-form>
+      <p class="eyebrow">独立管理入口</p><h1>管理员验证</h1><p class="muted">输入管理员密钥进入审核后台。</p>
+      <el-form label-position="top" @submit.prevent="login"><el-form-item label="管理员密钥"><el-input v-model="adminKey" type="password" maxlength="128" autocomplete="current-password" placeholder="请输入管理员密钥" show-password /></el-form-item><el-alert v-if="loginError" :title="loginError" type="error" :closable="false" /><el-button class="full-width form-submit" type="primary" native-type="submit" :loading="loginBusy">进入后台</el-button></el-form>
     </section>
     <template v-else>
       <div class="page-heading"><div><p class="eyebrow">让好诗被看见</p><h1>投稿审核</h1><p class="muted">核对诗句、出处与诗意，再将它送入签筒。</p></div><el-button @click="load" :loading="busy">刷新列表</el-button></div>

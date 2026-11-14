@@ -11,6 +11,7 @@
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
   --ink: #24251f;
   --ink-soft: #5e5c50;
   --paper: #e9dec4;
@@ -36,11 +37,15 @@ body {
     linear-gradient(rgba(235, 227, 207, 0.9), rgba(225, 216, 196, 0.88)),
     url("assets/paper-texture.png");
   background-size: auto, 640px 640px;
-  font-family: "FangSong", "STFangsong", "Noto Serif CJK SC", serif;
+  font-family: var(--font-ui);
+}
+
+button, input, textarea, select {
+  font: inherit;
 }
 
 button {
-  font: inherit;
+  line-height: 1.5;
 }
 
 .app-shell {
@@ -227,7 +232,7 @@ button {
   width: 30px;
   height: 30px;
   border: 1px solid rgba(255, 245, 223, 0.7);
-  font-family: "KaiTi", "STKaiti", serif;
+  font-family: var(--font-ui);
   font-size: 18px;
 }
 

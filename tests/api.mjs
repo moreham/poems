@@ -52,8 +52,10 @@ try {
   await forged.request('/admin/submissions', { status: 401 });
   await other.request('/auth/code', post({ email: emailB }));
   await other.request('/auth/login', post({ email: emailB, code: await mailCode(process.env.MAILPIT_URL, emailB) }));
-  await admin.request('/admin/login', post({ username: 'admin', password: 'incorrect' }, 401));
-  await admin.request('/admin/login', post({ username: 'admin', password: process.env.TEST_ADMIN_PASSWORD }));
+  await admin.request('/admin/login', post({ key: '' }, 400));
+  await admin.request('/admin/login', post({ username: 'admin', password: 'old-password' }, 400));
+  await admin.request('/admin/login', post({ key: 'incorrect' }, 401));
+  await admin.request('/admin/login', post({ key: process.env.TEST_ADMIN_KEY }));
   await admin.request('/submissions', post({}, 401));
   const entry = { request_id: randomUUID(), verse: `测试清风入诗笺${unique}`, title: '测试作品', author: '测试作者', meaning: '<script>alert(1)</script>只应作为文本呈现', original: '测试原文', source_url: 'https://example.com/source' };
   const first = await user.request('/submissions', post(entry, 201));

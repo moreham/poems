@@ -11,7 +11,7 @@ services:
       REDIS_URL: redis://redis:6379
       AUTH_SECRET: test-secret-used-only-in-isolated-tests-12345
       ADMIN_USERNAME: admin
-      ADMIN_PASSWORD: test-admin-password-only-12345
+      ADMIN_KEY: test-admin-key-only-12345
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
       SMTP_SECURE: "false"
@@ -55,7 +55,7 @@ services:
       TEST_ORIGIN: http://127.0.0.1:18001
       MAILPIT_URL: http://mailpit:8025
       REDIS_URL: redis://redis:6379
-      TEST_ADMIN_PASSWORD: test-admin-password-only-12345
+      TEST_ADMIN_KEY: test-admin-key-only-12345
     volumes: ["./tests:/app/tests:ro"]
     depends_on:
       poems: { condition: service_healthy }

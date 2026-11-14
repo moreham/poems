@@ -70,11 +70,10 @@ try {
   await details.getByRole('button', { name: '关闭此对话框' }).click();
   // A logged-in reader still sees the independent admin login.
   const guard = await reader.newPage(); await guard.goto(`${base}/admin`);
-  await expect(guard.getByRole('heading', { name: '管理员登录' })).toBeVisible(); await guard.close();
+  await expect(guard.getByRole('heading', { name: '管理员验证' })).toBeVisible(); await guard.close();
   await admin.goto(`${base}/admin`);
-  await admin.getByLabel('管理员账号', { exact: true }).fill('admin');
-  await admin.getByLabel('管理员密码', { exact: true }).fill('test-admin-password-only-12345');
-  await admin.getByRole('button', { name: '登录后台', exact: true }).click();
+  await admin.getByLabel('管理员密钥', { exact: true }).fill('test-admin-key-only-12345');
+  await admin.getByRole('button', { name: '进入后台', exact: true }).click();
   await expect(admin.getByRole('heading', { name: '投稿审核', exact: true })).toBeVisible();
   await admin.locator('.el-table__row').filter({ hasText: firstVerse }).getByRole('button', { name: '查看并审核' }).click();
   await admin.getByRole('button', { name: '通过审核', exact: true }).click();
@@ -104,7 +103,7 @@ try {
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await expect(page.getByRole('heading', { name: '登录后查看你的投稿' })).toBeVisible();
   await admin.getByRole('button', { name: '退出管理', exact: true }).click();
-  await expect(admin.getByRole('heading', { name: '管理员登录' })).toBeVisible();
+  await expect(admin.getByRole('heading', { name: '管理员验证' })).toBeVisible();
   await page.goto(base);
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 }); await noOverflow(page);

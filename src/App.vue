@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { api } from './api.js';
 import PoemStage from './components/PoemStage.vue';
@@ -34,6 +34,33 @@ async function logout() {
   finally { logoutBusy.value = false; }
 }
 function expired() { user.value = null; submissionOpen.value = false; login('submit'); }
+const shortcutKeys = new Set();
+function clearShortcut() { shortcutKeys.clear(); }
+function adminShortcut(event) {
+  const editing = event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
+  if (event.isComposing || editing || event.ctrlKey || event.altKey || event.metaKey) { clearShortcut(); return; }
+  if (event.repeat) return;
+  shortcutKeys.add(event.code);
+  if (event.shiftKey && shortcutKeys.has('KeyE') && shortcutKeys.has('KeyF')) {
+    event.preventDefault();
+    clearShortcut();
+    location.assign('/admin');
+  }
+}
+function releaseShortcut(event) { shortcutKeys.delete(event.code); }
+onMounted(() => {
+  if (adminPage) return;
+  window.addEventListener('keydown', adminShortcut);
+  window.addEventListener('keyup', releaseShortcut);
+  window.addEventListener('blur', clearShortcut);
+  document.addEventListener('visibilitychange', clearShortcut);
+});
+onUnmounted(() => {
+  window.removeEventListener('keydown', adminShortcut);
+  window.removeEventListener('keyup', releaseShortcut);
+  window.removeEventListener('blur', clearShortcut);
+  document.removeEventListener('visibilitychange', clearShortcut);
+});
 onMounted(async () => {
   if (adminPage) { checking.value = false; return; }
   try { user.value = (await api('/auth/me')).user; }
@@ -56,7 +83,7 @@ onMounted(async () => {
     <el-alert v-if="authError" :title="authError" type="warning" :closable="false" class="page-alert" />
     <RecordsPage v-if="recordsPage" :user="user" :checking="checking" :refresh="recordsRefresh" @login="login('records')" @submit="submit" @expired="user = null" />
     <PoemStage v-else />
-    <footer class="site-footer"><span>一诗一会 · 随心而遇</span><a href="/admin">管理员入口</a></footer>
+    <footer class="site-footer"><span>一诗一会 · 随心而遇</span></footer>
     <LoginDialog v-model="loginOpen" @logged-in="loggedIn" />
     <SubmissionDialog v-if="user" v-model="submissionOpen" @expired="expired" @submitted="submitted" />
   </template>

@@ -102,14 +102,14 @@ app.get('/api/submissions', requireRole('user'), async (req, res) => {
   res.json({ items, total, page, pageSize });
 });
 
-const dummyPassword = await hashPassword(randomBytes(32).toString('hex'));
+const dummyAdminKey = await hashPassword(randomBytes(32).toString('hex'));
 app.post('/api/admin/login', async (req, res) => {
   await limit(`admin-ip:${ipKey(req)}`, 10, 900);
-  const data = parse(z.object({ username: z.string().trim().min(1).max(80), password: z.string().min(1).max(128) }), req.body);
-  await limit(`admin-name:${sha256(data.username.toLowerCase())}`, 10, 900);
-  const [[admin]] = await db.execute('SELECT id, username, password_hash FROM admins WHERE username = ?', [data.username]);
-  const valid = await verifyPassword(data.password, admin?.password_hash || dummyPassword);
-  if (!admin || !valid) throw new HttpError(401, '管理员账号或密码错误');
+  const data = parse(z.object({ key: z.string().min(1, '请输入管理员密钥').max(128) }).strict(), req.body);
+  await limit(`admin-name:${sha256(config.ADMIN_USERNAME.toLowerCase())}`, 10, 900);
+  const [[admin]] = await db.execute('SELECT id, username, password_hash FROM admins WHERE username = ?', [config.ADMIN_USERNAME]);
+  const valid = await verifyPassword(data.key, admin?.password_hash || dummyAdminKey);
+  if (!admin || !valid) throw new HttpError(401, '管理员密钥错误');
   await createSession(req, res, 'admin', admin.id); res.json({ admin: { id: admin.id, username: admin.username } });
 });
 app.get('/api/admin/me', async (req, res) => {

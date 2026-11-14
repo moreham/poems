@@ -14,7 +14,7 @@
     "test": "node --test tests/security.test.js",
     "test:api": "node tests/api.mjs",
     "test:ui": "node tests/ui.mjs",
-    "admin:password": "node scripts/admin-password.js"
+    "admin:key": "node scripts/admin-key.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

@@ -32,9 +32,8 @@ export async function initializeDatabase() {
   });
   const [admins] = await db.query('SELECT id FROM admins LIMIT 1');
   if (!admins.length) {
-    if (!config.ADMIN_PASSWORD) throw new Error('首次启动请设置 ADMIN_PASSWORD（至少 12 位）');
     await db.execute('INSERT INTO admins (username, password_hash) VALUES (?, ?)',
-      [config.ADMIN_USERNAME, await hashPassword(config.ADMIN_PASSWORD)]);
+      [config.ADMIN_USERNAME, await hashPassword(config.ADMIN_KEY)]);
   }
   if (config.LEGACY_SQLITE_PATH) {
     try { await access(config.LEGACY_SQLITE_PATH); }

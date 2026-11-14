@@ -12,13 +12,26 @@ try {
   await expect(page.locator('#like-button')).toBeEnabled();
   await expect(page.locator('#verse')).not.toBeEmpty();
   await expect(page.getByRole('button', { name: '投稿诗句', exact: true })).toBeEnabled();
-  await page.goto(`${base}/admin`);
-  await page.getByLabel('管理员账号', { exact: true }).fill(process.env.ADMIN_USERNAME);
-  await page.getByLabel('管理员密码', { exact: true }).fill(process.env.ADMIN_PASSWORD);
-  await page.getByRole('button', { name: '登录后台', exact: true }).click();
+  await expect(page.locator('a[href="/admin"]')).toHaveCount(0);
+  await page.keyboard.down('Shift'); await page.keyboard.down('KeyE'); await page.keyboard.down('KeyF');
+  await page.waitForURL(`${base}/admin`);
+  await page.keyboard.up('KeyF'); await page.keyboard.up('KeyE'); await page.keyboard.up('Shift');
+  await expect(page.locator('.admin-login input')).toHaveCount(1);
+  await page.getByLabel('管理员密钥', { exact: true }).fill('incorrect-key');
+  await page.getByRole('button', { name: '进入后台', exact: true }).click();
+  await expect(page.getByText('管理员密钥错误', { exact: true })).toBeVisible();
+  assert.equal((await page.request.get(`${base}/api/admin/submissions`)).status(), 401);
+  assert.equal((await page.request.post(`${base}/api/admin/login`, {
+    headers: { Origin: base }, data: { username: 'admin', password: 'obsolete-password' }
+  })).status(), 400);
+  await page.getByLabel('管理员密钥', { exact: true }).fill(process.env.ADMIN_KEY || 'zmhnb');
+  await page.getByRole('button', { name: '进入后台', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '投稿审核', exact: true })).toBeVisible();
+  await page.reload();
   await expect(page.getByRole('heading', { name: '投稿审核', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '退出管理', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '管理员登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '管理员验证' })).toBeVisible();
+  assert.equal((await page.request.get(`${base}/api/admin/submissions`)).status(), 401);
   assert.deepEqual(errors, []);
-  console.log('PASS: deployed health, assets, guest drawing, like loading, configured administrator login and logout');
+  console.log('PASS: deployed health, assets, guest drawing, like loading, admin shortcut, single key field, rejected invalid/legacy credentials, key verification, persistent session and logout revocation');
 } finally { await browser.close(); }
