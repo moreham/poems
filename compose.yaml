@@ -1,0 +1,22 @@
+services:
+  poems:
+    build: .
+    image: poems:local
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${POEMS_PORT:-8001}:8001"
+    volumes:
+      - ./data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,11 @@
+**
+!Dockerfile
+!index.html
+!styles.css
+!app.js
+!interpretations.js
+!likes.js
+!assets/
+!assets/**
+!tools/
+!tools/public-server.py
