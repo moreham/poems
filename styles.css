@@ -1,7 +1,14 @@
 @font-face {
   font-family: "Huiwen Mincho";
-  src: url("assets/huiwen-mincho-subset.woff2") format("woff2"),
-       url("assets/huiwen-mincho.ttf") format("truetype");
+  src: url("assets/huiwen-mincho-subset.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Huiwen Mincho Full";
+  src: url("assets/huiwen-mincho-full.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -11,7 +18,7 @@
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+  --font-ui: "Huiwen Mincho", "Huiwen Mincho Full", serif;
   --ink: #24251f;
   --ink-soft: #5e5c50;
   --paper: #e9dec4;
@@ -148,7 +155,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: clamp(17px, 5vw, 28px);
-  font-family: "Huiwen Mincho", serif;
+  font-family: var(--font-ui);
   font-size: clamp(27px, 7.4vw, 35px);
   font-weight: 400;
   line-height: 1.3;
@@ -311,7 +318,7 @@ button {
   scrollbar-width: thin;
   scrollbar-color: #b1a287 transparent;
   padding: 0 5px 16px;
-  font-family: "Huiwen Mincho", serif;
+  font-family: var(--font-ui);
   font-size: 16px;
   line-height: 1.8;
   overflow-wrap: anywhere;

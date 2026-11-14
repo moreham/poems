@@ -8,13 +8,20 @@
   --el-color-primary-dark-2: #7c2a20;
   --el-font-family: var(--font-ui);
 }
+.public-header { display: grid; justify-items: center; gap: 10px; padding: 16px 16px 8px; }
+.more-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 96px; min-height: 44px; padding: 9px 18px; border: 1px solid #a88970; border-radius: 22px; background: #f5ebd6cc; color: #704d3d; font-size: 16px; line-height: 1.5; cursor: pointer; }
+.more-button:hover { background: #fff2de; }
+.more-button:focus-visible { outline: 3px solid #9b392947; outline-offset: 3px; }
+.more-button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; transition: transform 160ms ease; }
+.more-button svg.is-open { transform: rotate(180deg); }
+.more-menu { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: min(100%, 320px); }
+.more-menu .el-button { margin: 0; min-width: 0; min-height: 44px; height: auto; padding: 10px 8px; font-size: 14px; line-height: 1.5; }
 .site-header { max-width: 1240px; margin: auto; padding: 24px 32px 12px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .site-brand { font-family: var(--font-ui); font-weight: 500; line-height: 1.5; font-size: 23px; letter-spacing: .14em; color: var(--cinnabar); text-decoration: none; white-space: nowrap; }
 .site-brand span { display: block; color: var(--ink-soft); font-weight: 400; line-height: 1.6; font-size: 12px; letter-spacing: .06em; margin-top: 7px; }
 .site-header nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .site-header nav > a { color: #795243; font-size: 14px; margin-right: 12px; }
 .site-header .el-button + .el-button { margin-left: 0; }
-.user-email { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: sans-serif; font-size: 12px; color: var(--ink-soft); }
 .app-shell { min-height: calc(100svh - 154px); padding-top: 16px; padding-bottom: 22px; }
 .site-footer { display: flex; justify-content: center; flex-wrap: wrap; gap: 24px; padding: 16px; color: #827768; font-size: 12px; }
 .content-page { max-width: 1160px; margin: 35px auto 60px; padding: 0 24px; min-height: calc(100svh - 240px); }
@@ -63,7 +70,6 @@ h1 { margin: 8px 0 12px; font-weight: 500; font-size: 30px; }
   .site-header nav .el-button { min-height: 44px; height: auto; padding: 10px 12px; font-size: 14px; line-height: 1.5; }
   .controls button { font-size: 16px; line-height: 1.5; white-space: nowrap; }
   .paper-dialog .el-input__inner, .paper-dialog .el-textarea__inner { font-size: 16px; }
-  .user-email { display: none; }
   .content-page { margin-top: 25px; padding: 0 14px; }
   .data-panel { padding: 14px; }
   .paper-dialog { padding: 20px 16px; }

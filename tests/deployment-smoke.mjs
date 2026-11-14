@@ -11,7 +11,10 @@ try {
   await page.goto(base);
   await expect(page.locator('#like-button')).toBeEnabled();
   await expect(page.locator('#verse')).not.toBeEmpty();
+  await expect(page.locator('#more-menu')).toBeHidden();
+  await page.getByRole('button', { name: '更多', exact: true }).click();
   await expect(page.getByRole('button', { name: '投稿诗句', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '更多', exact: true }).click();
   await expect(page.locator('a[href="/admin"]')).toHaveCount(0);
   await page.keyboard.down('Shift'); await page.keyboard.down('KeyE'); await page.keyboard.down('KeyF');
   await page.waitForURL(`${base}/admin`);

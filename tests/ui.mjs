@@ -17,6 +17,10 @@ for (const target of [page, admin]) target.on('pageerror', error => errors.push(
 const suffix = randomUUID().slice(0, 8), email = `ui-${suffix}@example.com`;
 const firstVerse = `清风携诗入梦来${suffix}`, secondVerse = `明月照我读书窗${suffix}`;
 const meaning = '<script>alert(1)</script>这里是以文本呈现的诗意解读。';
+async function chooseMenu(name) {
+  await page.getByRole('button', { name: '更多', exact: true }).click();
+  await page.getByRole('navigation', { name: '用户导航' }).getByRole('button', { name, exact: true }).click();
+}
 async function submit(verse) {
   const dialog = page.getByRole('dialog', { name: '分享一句好诗' });
   await expect(dialog).toBeVisible();
@@ -47,7 +51,7 @@ try {
   await page.locator('#draw-button').click();
   await expect(page.locator('#verse')).not.toHaveAttribute('aria-label', original);
   await page.screenshot({ path: `${output}/poems-home.png`, fullPage: true });
-  await page.getByRole('button', { name: '投稿诗句', exact: true }).click();
+  await chooseMenu('投稿诗句');
   await expect(page.getByRole('dialog', { name: '邮箱登录' })).toBeVisible();
   await expect(page.getByRole('dialog', { name: '分享一句好诗' })).not.toBeVisible();
   await page.getByLabel('邮箱地址', { exact: true }).fill(email);
@@ -56,9 +60,9 @@ try {
   await page.getByPlaceholder('6 位验证码').fill(await mailCode(mailpit, email));
   await page.getByRole('button', { name: '验证并登录', exact: true }).click();
   await submit(firstVerse);
-  await page.getByRole('button', { name: '投稿诗句', exact: true }).click();
+  await chooseMenu('投稿诗句');
   await submit(secondVerse);
-  await page.getByRole('button', { name: '我的投稿', exact: true }).click();
+  await chooseMenu('我的投稿');
   await expect(page.getByRole('heading', { name: '投稿记录', exact: true })).toBeVisible();
   const firstRow = page.locator('.el-table__row').filter({ hasText: firstVerse });
   const secondRow = page.locator('.el-table__row').filter({ hasText: secondVerse });
@@ -100,7 +104,7 @@ try {
     await page.getByRole('button', { name: '再投一句' }).click(); await noOverflow(page);
     await page.getByRole('button', { name: '暂不提交', exact: true }).click();
   }
-  await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await chooseMenu('退出登录');
   await expect(page.getByRole('heading', { name: '登录后查看你的投稿' })).toBeVisible();
   await admin.getByRole('button', { name: '退出管理', exact: true }).click();
   await expect(admin.getByRole('heading', { name: '管理员验证' })).toBeVisible();

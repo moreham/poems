@@ -16,6 +16,10 @@ const submissionOpen = ref(false);
 const logoutBusy = ref(false);
 const authError = ref('');
 const recordsRefresh = ref(0);
+const moreOpen = ref(false);
+const moreButton = ref(null);
+function closeMore() { moreOpen.value = false; moreButton.value?.focus(); }
+function chooseAction(action) { closeMore(); action(); }
 function submitted() { recordsRefresh.value++; ElMessage.success('投稿已送达，审核通过后会加入抽签池'); }
 let afterLogin = '';
 function login(action = '') { afterLogin = action; loginOpen.value = true; }
@@ -71,13 +75,16 @@ onMounted(async () => {
 <template>
   <AdminPage v-if="adminPage" />
   <template v-else>
-    <header class="site-header">
-      <a class="site-brand" href="/">一笺诗意<span>把喜欢的诗，留给下一位有缘人</span></a>
-      <nav aria-label="用户导航">
-        <el-button text @click="submit" :disabled="checking">投稿诗句</el-button>
-        <el-button text @click="records" :disabled="checking">我的投稿</el-button>
-        <template v-if="user"><span class="user-email" :title="user.email">{{ user.email }}</span><el-button text :loading="logoutBusy" @click="logout">退出登录</el-button></template>
-        <el-button v-else type="primary" plain :disabled="checking" @click="login()">邮箱登录</el-button>
+    <header class="public-header" @keydown.esc.stop.prevent="closeMore">
+      <button ref="moreButton" class="more-button" type="button" :aria-expanded="moreOpen" aria-controls="more-menu" @click="moreOpen = !moreOpen">
+        更多
+        <svg aria-hidden="true" viewBox="0 0 16 16" :class="{ 'is-open': moreOpen }"><path d="m4 6 4 4 4-4" /></svg>
+      </button>
+      <nav v-show="moreOpen" id="more-menu" class="more-menu" aria-label="用户导航">
+        <el-button text @click="chooseAction(submit)" :disabled="checking">投稿诗句</el-button>
+        <el-button text @click="chooseAction(records)" :disabled="checking">我的投稿</el-button>
+        <el-button v-if="user" text :loading="logoutBusy" @click="chooseAction(logout)">退出登录</el-button>
+        <el-button v-else type="primary" plain :disabled="checking" @click="chooseAction(login)">邮箱登录</el-button>
       </nav>
     </header>
     <el-alert v-if="authError" :title="authError" type="warning" :closable="false" class="page-alert" />
