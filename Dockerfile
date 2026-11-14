@@ -1,20 +1,23 @@
-FROM python:3.14-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
-
-RUN groupadd --gid 10001 poetry \
-    && useradd --uid 10001 --gid poetry --no-create-home poetry \
-    && mkdir /app/data \
-    && chown poetry:poetry /app/data
-
-COPY index.html styles.css app.js interpretations.js likes.js ./
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY index.html vite.config.js styles.css ./
+COPY src/ ./src/
 COPY assets/ ./assets/
-COPY tools/public-server.py ./tools/public-server.py
+COPY server/data/ ./server/data/
+RUN npm run build && npm prune --omit=dev
 
-USER poetry
+FROM node:24-bookworm-slim
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY package.json ./
+COPY server/ ./server/
+COPY scripts/ ./scripts/
+USER node
 EXPOSE 8001
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/', timeout=3).read()"
-CMD ["python", "tools/public-server.py", "--host", "0.0.0.0", "--port", "8001", "--db", "/app/data/likes.sqlite3"]
+HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
+    CMD node -e "fetch('http://127.0.0.1:8001/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+CMD ["node", "server/index.js"]

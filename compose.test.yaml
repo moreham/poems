@@ -1,0 +1,63 @@
+services:
+  poems:
+    image: poems:local
+    environment:
+      NODE_ENV: test
+      APP_ORIGIN: http://127.0.0.1:18001
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: poems_test
+      MYSQL_USER: poems
+      MYSQL_PASSWORD: test-database-password-only-123456
+      REDIS_URL: redis://redis:6379
+      AUTH_SECRET: test-secret-used-only-in-isolated-tests-12345
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: test-admin-password-only-12345
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      SMTP_REQUIRE_TLS: "false"
+      SMTP_FROM: tests@poems.local
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      mailpit: { condition: service_started }
+    ports: ["127.0.0.1:18001:8001"]
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: poems_test
+      MYSQL_USER: poems
+      MYSQL_PASSWORD: test-database-password-only-123456
+      MYSQL_ROOT_PASSWORD: test-root-password-only-123456
+    volumes: [test-mysql:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysqladmin ping -h127.0.0.1 -uroot --silent']
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+  redis:
+    image: redis:7.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports: ["127.0.0.1:18025:8025"]
+  tests:
+    image: poems:local
+    profiles: [checks]
+    entrypoint: ["node", "tests/api.mjs"]
+    environment:
+      TEST_URL: http://poems:8001
+      TEST_ORIGIN: http://127.0.0.1:18001
+      MAILPIT_URL: http://mailpit:8025
+      REDIS_URL: redis://redis:6379
+      TEST_ADMIN_PASSWORD: test-admin-password-only-12345
+    volumes: ["./tests:/app/tests:ro"]
+    depends_on:
+      poems: { condition: service_healthy }
+volumes:
+  test-mysql:

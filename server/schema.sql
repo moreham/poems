@@ -1,0 +1,60 @@
+CREATE TABLE IF NOT EXISTS users (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(254) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL UNIQUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS admins (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(80) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS submissions (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  request_id CHAR(36) CHARACTER SET ascii NOT NULL,
+  verse VARCHAR(240) NOT NULL,
+  verse_key CHAR(64) CHARACTER SET ascii NOT NULL,
+  title VARCHAR(120) NOT NULL,
+  author VARCHAR(80) NOT NULL,
+  meaning TEXT NOT NULL,
+  original TEXT NOT NULL,
+  source_url VARCHAR(1000) NOT NULL DEFAULT '',
+  status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  rejection_reason VARCHAR(1000) NULL,
+  reviewed_by INT UNSIGNED NULL,
+  reviewed_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_request (user_id, request_id),
+  KEY user_history (user_id, id),
+  KEY review_queue (status, id),
+  KEY verse_pending (user_id, verse_key, status),
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (reviewed_by) REFERENCES admins(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS poems (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  verse VARCHAR(240) NOT NULL,
+  verse_key CHAR(64) CHARACTER SET ascii NOT NULL UNIQUE,
+  title VARCHAR(120) NOT NULL,
+  author VARCHAR(80) NOT NULL,
+  meaning TEXT NOT NULL,
+  original TEXT NOT NULL,
+  source_url VARCHAR(1000) NOT NULL DEFAULT '',
+  excerpt BOOLEAN NOT NULL DEFAULT FALSE,
+  submission_id INT UNSIGNED NULL UNIQUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (submission_id) REFERENCES submissions(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS likes (
+  poem_id INT UNSIGNED NOT NULL,
+  visitor CHAR(32) CHARACTER SET ascii NOT NULL,
+  draw_id CHAR(32) CHARACTER SET ascii NOT NULL DEFAULT '',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (poem_id, visitor, draw_id),
+  FOREIGN KEY (poem_id) REFERENCES poems(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS migrations (
+  name VARCHAR(100) NOT NULL PRIMARY KEY,
+  completed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;

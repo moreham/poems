@@ -6,17 +6,76 @@ services:
     init: true
     ports:
       - "${POEMS_PORT:-8001}:8001"
+    environment:
+      NODE_ENV: production
+      PORT: 8001
+      APP_ORIGIN: ${APP_ORIGIN:-http://127.0.0.1:8001}
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: poems
+      MYSQL_USER: poems
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请配置 MYSQL_PASSWORD}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?请配置 REDIS_PASSWORD}@redis:6379
+      AUTH_SECRET: ${AUTH_SECRET:?请配置 AUTH_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?首次启动请配置管理员密码}
+      SMTP_HOST: ${SMTP_HOST:?请配置 SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:?请配置 SMTP_FROM}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
+      LEGACY_SQLITE_PATH: /legacy/likes.sqlite3
     volumes:
-      - ./data:/app/data
+      - ./data:/legacy:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     read_only: true
     tmpfs:
-      - /tmp:size=16m,mode=1777
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
+      - /tmp:size=32m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     logging:
       driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+      options: { max-size: "10m", max-file: "3" }
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: poems
+      MYSQL_USER: poems
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请配置 MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请配置 MYSQL_ROOT_PASSWORD}
+      TZ: UTC
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes: [mysql-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysqladmin ping -h 127.0.0.1 -uroot --silent']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?请配置 REDIS_PASSWORD}
+    command: ["sh", "-c", 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ["CMD-SHELL", 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  mailpit:
+    image: axllent/mailpit:v1.27
+    profiles: [local-mail]
+    restart: unless-stopped
+    ports: ["127.0.0.1:8025:8025"]
+volumes:
+  mysql-data:
+  redis-data:
